@@ -3,7 +3,7 @@ FROM node:22-bookworm-slim
 ENV HOME=/home/riri \
     FAILPROOFAI_HOME=/home/riri/.failproofai \
     PYTHONPATH=/opt/riri \
-    PATH=/opt/venv/bin:/usr/local/bin:/usr/bin:/bin \
+    PATH=/opt/venv/bin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     OPENCODE_DISABLE_AUTOUPDATE=1
 
 ARG RIRI_UID=10001
