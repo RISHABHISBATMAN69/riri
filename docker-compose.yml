@@ -74,8 +74,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp
-      - /home/riri/.failproofai/state:uid=${RIRI_UID:-10001},gid=${RIRI_GID:-10001},mode=0700
-      - /home/riri/.cache:uid=${RIRI_UID:-10001},gid=${RIRI_GID:-10001},mode=0700
+      - /home/riri/.failproofai/state:mode=1777
+      - /home/riri/.cache:mode=1777
     depends_on:
       ollama:
         condition: service_healthy
