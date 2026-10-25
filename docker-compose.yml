@@ -70,7 +70,7 @@ services:
       - ${RIRI_WORKSPACE:-.}:/workspace
       - ./agent/policies-config.json:/home/riri/.failproofai/policies-config.json:ro
       - opencode_data:/home/riri/.local/share/opencode
-    working_dir: /workspace
+    working_dir: /opt/riri
     read_only: true
     tmpfs:
       - /tmp
