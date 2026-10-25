@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101411">
+    <title>Riri — Local AI Bridge</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Riri home">
+          <span class="brand-mark">r</span>
+          <span>riri</span>
+        </a>
+        <div class="topbar-right">
+          <span class="local-label"><span class="local-dot"></span> LOCAL ONLY</span>
+          <span id="status" class="status status-checking">Checking policies…</span>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <section class="chat-panel" aria-label="Chat with Riri">
+          <div class="intro">
+            <div class="eyebrow">YOUR LOCAL CODING AGENT</div>
+            <h1>What are we<br><span>building today?</span></h1>
+            <p>Riri works in your mounted project using a local model. FailproofAI checks each tool call before it runs.</p>
+            <div class="intro-chips">
+              <span>Ollama · two local models</span>
+              <span id="pack-chip">Policy pack · verifying</span>
+            </div>
+          </div>
+
+          <div id="messages" class="messages" aria-live="polite"></div>
+
+          <div id="notice" class="notice" role="status" hidden></div>
+
+          <form id="composer" class="composer">
+            <label class="sr-only" for="prompt">Message Riri</label>
+            <textarea id="prompt" name="prompt" rows="2" maxlength="20000" placeholder="Ask Riri to explore or change your project…" required></textarea>
+            <div class="composer-footer">
+              <span>Enter to send · Shift+Enter for a new line</span>
+              <button id="send" type="submit" disabled>
+                <span>Send</span><span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </form>
+          <p class="footnote">Your prompts stay on this device. The local audit log records events, not message content.</p>
+        </section>
+
+        <aside class="side-panel">
+          <section class="status-card">
+            <div class="section-heading">
+              <span class="section-icon">◎</span>
+              <div>
+                <h2>Protection status</h2>
+                <p>Verified before each prompt</p>
+              </div>
+            </div>
+            <div id="policy-detail" class="policy-detail">
+              <span class="skeleton"></span>
+            </div>
+            <p class="side-note">If the installed coding pack cannot be verified, Riri pauses and does not forward your prompt.</p>
+          </section>
+
+          <section class="activity-card">
+            <div class="section-heading">
+              <span class="section-icon muted-icon">⌁</span>
+              <div>
+                <h2>Local activity</h2>
+                <p>Recent bridge events · no prompt text</p>
+              </div>
+              <button id="refresh-activity" class="icon-button" type="button" aria-label="Refresh activity">↻</button>
+            </div>
+            <ol id="activity" class="activity-list">
+              <li class="activity-empty">No activity yet.</li>
+            </ol>
+          </section>
+
+          <div class="privacy-card">
+            <span aria-hidden="true">⌂</span>
+            <p><strong>Local by design</strong><br>Agent tools have no internet route. No hosted model or external API is used.</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

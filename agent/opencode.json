@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": false,
+  "model": "openai/qwen2.5-coder:7b",
+  "small_model": "openai/qwen2.5-coder:7b",
+  "provider": {
+    "openai": {
+      "name": "Local Ollama",
+      "options": {
+        "baseURL": "http://ollama:11434/v1",
+        "apiKey": "ollama"
+      },
+      "models": {
+        "qwen2.5-coder:7b": {
+          "name": "Qwen 2.5 Coder 7B",
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          }
+        }
+      }
+    }
+  },
+  "tools": {
+    "webfetch": false,
+    "websearch": false
+  },
+  "agent": {
+    "riri": {
+      "description": "Local coding agent for the mounted workspace",
+      "mode": "primary",
+      "prompt": "You are Riri, a local coding agent. Work only in the current workspace and use the configured local model. Do not attempt network access, policy changes, or ways around a FailproofAI denial. Explain blocked actions and propose a policy-compliant alternative.",
+      "permission": {
+        "*": "allow",
+        "external_directory": "deny"
+      }
+    }
+  }
+}

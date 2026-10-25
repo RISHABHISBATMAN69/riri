@@ -1,0 +1,19 @@
+{
+  "enabledPolicies": [
+    "sanitize-jwt",
+    "sanitize-api-keys",
+    "sanitize-connection-strings",
+    "sanitize-private-key-content",
+    "sanitize-bearer-tokens",
+    "protect-env-vars",
+    "block-env-files",
+    "block-read-outside-cwd",
+    "block-sudo",
+    "block-curl-pipe-sh",
+    "block-rm-rf",
+    "block-secrets-write",
+    "block-push-master",
+    "block-force-push",
+    "block-work-on-main"
+  ]
+}

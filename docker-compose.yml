@@ -1,0 +1,140 @@
+services:
+  ui:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:${RIRI_PORT:-8080}:8080"
+    volumes:
+      - ./ui:/usr/share/nginx/html:ro
+      - ./ui/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    depends_on:
+      bridge:
+        condition: service_healthy
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+
+  bridge:
+    build:
+      context: ./bridge
+    environment:
+      RIRI_AGENT_URL: http://agent:8081
+      RIRI_DATABASE_PATH: /data/riri.sqlite3
+      RIRI_OLLAMA_URL: http://ollama:11434
+      RIRI_CLASSIFIER_MODEL: qwen2.5:3b
+    volumes:
+      - audit_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks:
+      - frontend
+      - agent_internal
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+  agent:
+    build:
+      context: .
+      dockerfile: agent/Dockerfile
+      args:
+        RIRI_UID: ${RIRI_UID:-10001}
+        RIRI_GID: ${RIRI_GID:-10001}
+    environment:
+      FAILPROOFAI_HOME: /home/riri/.failproofai
+      FAILPROOFAI_NO_DOWNLOAD: "1"
+      OPENCODE_DISABLE_AUTOUPDATE: "1"
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - ${RIRI_WORKSPACE:-.}:/workspace
+      - ./agent/policies-config.json:/home/riri/.failproofai/policies-config.json:ro
+      - opencode_data:/home/riri/.local/share/opencode
+    working_dir: /workspace
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/riri/.failproofai/state:uid=${RIRI_UID:-10001},gid=${RIRI_GID:-10001},mode=0700
+      - /home/riri/.cache:uid=${RIRI_UID:-10001},gid=${RIRI_GID:-10001},mode=0700
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - agent_internal
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/ready', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 512
+
+  ollama:
+    image: ollama/ollama:0.40.11
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_AGENT_MODEL: qwen2.5-coder:7b
+      OLLAMA_BRIDGE_MODEL: qwen2.5:3b
+    volumes:
+      - ollama_models:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        server_pid=$$!
+        trap 'kill "$$server_pid"; wait "$$server_pid"' TERM INT
+        until ollama list >/dev/null 2>&1; do sleep 2; done
+        ollama pull "$$OLLAMA_BRIDGE_MODEL"
+        ollama pull "$$OLLAMA_AGENT_MODEL"
+        wait "$$server_pid"
+    networks:
+      - agent_internal
+      - model_download
+    healthcheck:
+      test: ["CMD-SHELL", "ollama show \"$${OLLAMA_BRIDGE_MODEL}\" >/dev/null 2>&1 && ollama show \"$${OLLAMA_AGENT_MODEL}\" >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10m
+    restart: unless-stopped
+
+volumes:
+  audit_data:
+  opencode_data:
+  ollama_models:
+
+networks:
+  frontend:
+    internal: true
+  agent_internal:
+    internal: true
+  model_download: {}
