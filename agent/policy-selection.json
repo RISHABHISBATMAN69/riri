@@ -1,0 +1,23 @@
+{
+  "pack_id": "FailproofAI/policies",
+  "version": "2.0.0",
+  "artifact_sha256": "c09705183be55b518a5e660e026d80aa77b237e51fb550ccfb05dee0335c654a",
+  "cli": "opencode",
+  "policies": [
+    "sanitize-jwt",
+    "sanitize-api-keys",
+    "sanitize-connection-strings",
+    "sanitize-private-key-content",
+    "sanitize-bearer-tokens",
+    "protect-env-vars",
+    "block-env-files",
+    "block-read-outside-cwd",
+    "block-sudo",
+    "block-curl-pipe-sh",
+    "block-rm-rf",
+    "block-secrets-write",
+    "block-push-master",
+    "block-force-push",
+    "block-work-on-main"
+  ]
+}
