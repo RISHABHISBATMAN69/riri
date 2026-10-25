@@ -4,16 +4,17 @@ const promptInput = document.querySelector("#prompt");
 const sendButton = document.querySelector("#send");
 const statusBadge = document.querySelector("#status");
 const policyDetail = document.querySelector("#policy-detail");
-const packChip = document.querySelector("#pack-chip");
+const policyIndicator = document.querySelector(".policy-indicator");
 const notice = document.querySelector("#notice");
-const activityList = document.querySelector("#activity");
-const activityButton = document.querySelector("#refresh-activity");
+const welcome = document.querySelector("#welcome");
+const newChatButton = document.querySelector("#new-chat");
 let conversationId = crypto.randomUUID();
 let ready = false;
 let sending = false;
 let checkingStatus = false;
 
 function addMessage(role, text, options = {}) {
+  welcome.hidden = true;
   const article = document.createElement("article");
   article.className = `message message-${role}${options.denied ? " message-denial" : ""}`;
   const label = document.createElement("div");
@@ -49,9 +50,7 @@ function renderPolicyStatus(status) {
   ready = status.ready === true;
   statusBadge.textContent = ready ? "POLICIES VERIFIED" : "POLICY CHECK BLOCKED";
   statusBadge.className = `status ${ready ? "status-ready" : "status-blocked"}`;
-  packChip.textContent = ready
-    ? `Pack · ${status.version} · ${status.cli}`
-    : "Policy pack · unavailable";
+  policyIndicator.className = `policy-indicator ${ready ? "indicator-ready" : "indicator-blocked"}`;
   policyDetail.replaceChildren();
   const rows = ready
     ? [
@@ -97,45 +96,6 @@ async function refreshStatus() {
   }
 }
 
-function friendlyEventName(eventType) {
-  return eventType.replaceAll("_", " ");
-}
-
-async function refreshActivity() {
-  try {
-    const response = await fetch("/api/activity?limit=20");
-    if (!response.ok) throw new Error("Activity is unavailable");
-    const { events } = await response.json();
-    activityList.replaceChildren();
-    if (!events.length) {
-      const empty = document.createElement("li");
-      empty.className = "activity-empty";
-      empty.textContent = "No activity yet.";
-      activityList.append(empty);
-      return;
-    }
-    for (const event of events) {
-      const item = document.createElement("li");
-      const label = document.createElement("span");
-      label.textContent = friendlyEventName(event.event_type);
-      const time = document.createElement("time");
-      time.dateTime = event.created_at;
-      time.textContent = new Date(event.created_at).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      item.append(label, time);
-      activityList.append(item);
-    }
-  } catch {
-    activityList.replaceChildren();
-    const unavailable = document.createElement("li");
-    unavailable.className = "activity-empty";
-    unavailable.textContent = "Local activity is unavailable.";
-    activityList.append(unavailable);
-  }
-}
-
 async function submitPrompt(text) {
   const prompt = text.trim();
   if (!prompt || !ready || sending) return;
@@ -170,7 +130,6 @@ async function submitPrompt(text) {
     sending = false;
     updateComposer();
     await refreshStatus();
-    await refreshActivity();
   }
 }
 
@@ -187,10 +146,30 @@ promptInput.addEventListener("keydown", (event) => {
   }
 });
 
-activityButton.addEventListener("click", refreshActivity);
+function startNewChat() {
+  if (sending) return;
+  conversationId = crypto.randomUUID();
+  messages.replaceChildren();
+  welcome.hidden = false;
+  promptInput.value = "";
+  showNotice("");
+  updateComposer();
+  promptInput.focus();
+}
+
+newChatButton.addEventListener("click", startNewChat);
+document.querySelectorAll(".suggestion").forEach((button) => {
+  button.addEventListener("click", () => submitPrompt(button.dataset.prompt || ""));
+});
+document.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    startNewChat();
+  }
+});
+
 renderPolicyStatus({ ready: false, message: "Checking the local policy service…" });
 refreshStatus();
-refreshActivity();
 setInterval(() => {
   if (!ready && !sending) refreshStatus();
 }, 5000);

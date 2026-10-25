@@ -3,88 +3,105 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101411">
+    <meta name="theme-color" content="#212121">
     <title>Riri — Local AI Bridge</title>
     <link rel="stylesheet" href="/styles.css">
     <script src="/app.js" defer></script>
   </head>
   <body>
-    <main class="shell">
-      <header class="topbar">
-        <a class="brand" href="/" aria-label="Riri home">
-          <span class="brand-mark">r</span>
-          <span>riri</span>
-        </a>
-        <div class="topbar-right">
-          <span class="local-label"><span class="local-dot"></span> LOCAL ONLY</span>
-          <span id="status" class="status status-checking">Checking policies…</span>
-        </div>
-      </header>
-
-      <div class="workspace">
-        <section class="chat-panel" aria-label="Chat with Riri">
-          <div class="intro">
-            <div class="eyebrow">YOUR LOCAL CODING AGENT</div>
-            <h1>What are we<br><span>building today?</span></h1>
-            <p>Riri works in your mounted project using a local model. FailproofAI checks each tool call before it runs.</p>
-            <div class="intro-chips">
-              <span>Ollama · two local models</span>
-              <span id="pack-chip">Policy pack · verifying</span>
-            </div>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Sidebar">
+        <div class="sidebar-top">
+          <a class="brand" href="/" aria-label="Riri home">
+            <span class="brand-mark">r</span>
+            <span>riri</span>
+          </a>
+          <button id="new-chat" class="new-chat" type="button">
+            <span aria-hidden="true">＋</span>
+            <span>New chat</span>
+            <span class="new-chat-shortcut">⌘ K</span>
+          </button>
+          <div class="sidebar-label">LOCAL CODING AGENT</div>
+          <div class="sidebar-workspace">
+            <span class="workspace-icon" aria-hidden="true">⌘</span>
+            <span>
+              <strong>Workspace</strong>
+              <small>Mounted project folder</small>
+            </span>
+            <span class="workspace-dot" aria-label="Local"></span>
           </div>
+        </div>
 
-          <div id="messages" class="messages" aria-live="polite"></div>
-
-          <div id="notice" class="notice" role="status" hidden></div>
-
-          <form id="composer" class="composer">
-            <label class="sr-only" for="prompt">Message Riri</label>
-            <textarea id="prompt" name="prompt" rows="2" maxlength="20000" placeholder="Ask Riri to explore or change your project…" required></textarea>
-            <div class="composer-footer">
-              <span>Enter to send · Shift+Enter for a new line</span>
-              <button id="send" type="submit" disabled>
-                <span>Send</span><span aria-hidden="true">↗</span>
-              </button>
-            </div>
-          </form>
-          <p class="footnote">Your prompts stay on this device. The local audit log records events, not message content.</p>
-        </section>
-
-        <aside class="side-panel">
-          <section class="status-card">
-            <div class="section-heading">
-              <span class="section-icon">◎</span>
-              <div>
-                <h2>Protection status</h2>
-                <p>Verified before each prompt</p>
-              </div>
+        <div class="sidebar-bottom">
+          <div class="sidebar-policy">
+            <div class="sidebar-policy-heading">
+              <span class="policy-indicator" aria-hidden="true"></span>
+              <span id="status" class="status status-checking">Checking policies…</span>
             </div>
             <div id="policy-detail" class="policy-detail">
               <span class="skeleton"></span>
             </div>
-            <p class="side-note">If the installed coding pack cannot be verified, Riri pauses and does not forward your prompt.</p>
-          </section>
-
-          <section class="activity-card">
-            <div class="section-heading">
-              <span class="section-icon muted-icon">⌁</span>
-              <div>
-                <h2>Local activity</h2>
-                <p>Recent bridge events · no prompt text</p>
-              </div>
-              <button id="refresh-activity" class="icon-button" type="button" aria-label="Refresh activity">↻</button>
-            </div>
-            <ol id="activity" class="activity-list">
-              <li class="activity-empty">No activity yet.</li>
-            </ol>
-          </section>
-
-          <div class="privacy-card">
-            <span aria-hidden="true">⌂</span>
-            <p><strong>Local by design</strong><br>Agent tools have no internet route. No hosted model or external API is used.</p>
           </div>
-        </aside>
-      </div>
-    </main>
+          <div class="sidebar-local">
+            <span class="local-icon" aria-hidden="true">⌂</span>
+            <span><strong>Runs on your device</strong><small>No hosted model APIs</small></span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="model-label">
+            <span>Riri</span>
+            <span class="model-tag">Local coding agent</span>
+            <span class="chevron" aria-hidden="true">⌄</span>
+          </div>
+          <span class="local-label"><span class="local-dot"></span> LOCAL ONLY</span>
+        </header>
+
+        <section class="chat-area" aria-label="Chat with Riri">
+          <div id="conversation" class="conversation">
+            <div id="welcome" class="welcome">
+              <div class="welcome-mark" aria-hidden="true">r</div>
+              <h1>What can I help you build?</h1>
+              <p>Ask Riri to explore, explain, or change code in your local project.</p>
+              <div class="suggestions" aria-label="Try asking">
+                <button class="suggestion" type="button" data-prompt="Explain the structure of this project">
+                  <span class="suggestion-icon" aria-hidden="true">⌘</span>
+                  <span><strong>Explore this project</strong><small>Explain its structure and key files</small></span>
+                  <span class="suggestion-arrow" aria-hidden="true">↗</span>
+                </button>
+                <button class="suggestion" type="button" data-prompt="Find and run the relevant tests for this project">
+                  <span class="suggestion-icon" aria-hidden="true">✓</span>
+                  <span><strong>Run the tests</strong><small>Find the right test command</small></span>
+                  <span class="suggestion-arrow" aria-hidden="true">↗</span>
+                </button>
+                <button class="suggestion" type="button" data-prompt="Review this project for a small improvement">
+                  <span class="suggestion-icon" aria-hidden="true">✳</span>
+                  <span><strong>Improve the code</strong><small>Suggest a focused change</small></span>
+                  <span class="suggestion-arrow" aria-hidden="true">↗</span>
+                </button>
+              </div>
+            </div>
+            <div id="messages" class="messages" aria-live="polite"></div>
+          </div>
+
+          <div class="composer-wrap">
+            <div id="notice" class="notice" role="status" hidden></div>
+            <form id="composer" class="composer">
+              <label class="sr-only" for="prompt">Message Riri</label>
+              <textarea id="prompt" name="prompt" rows="1" maxlength="20000" placeholder="Message Riri…" required></textarea>
+              <div class="composer-footer">
+                <span class="composer-hint">Enter to send · Shift+Enter for a new line</span>
+                <button id="send" type="submit" aria-label="Send message" disabled>
+                  <span aria-hidden="true">↑</span>
+                </button>
+              </div>
+            </form>
+            <div class="composer-caption">Riri can make mistakes. FailproofAI checks tool calls before they run.</div>
+          </div>
+        </section>
+      </main>
+    </div>
   </body>
 </html>
